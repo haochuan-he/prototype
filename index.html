@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>番茄时钟 · 专注计时器</title>
+  <meta name="description" content="简洁现代的番茄工作法计时器，助你高效专注，提升工作效率。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Ambient background blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="app-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">🍅</span>
+        <span class="logo-text">番茄时钟</span>
+      </div>
+      <button class="settings-btn" id="settingsBtn" title="设置" aria-label="打开设置">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+          <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Mode Tabs -->
+    <nav class="mode-tabs" role="tablist" aria-label="计时模式">
+      <button class="tab-btn active" id="tab-pomodoro" role="tab" aria-selected="true" data-mode="pomodoro">
+        🍅 专注
+      </button>
+      <button class="tab-btn" id="tab-short" role="tab" aria-selected="false" data-mode="short">
+        ☕ 短休息
+      </button>
+      <button class="tab-btn" id="tab-long" role="tab" aria-selected="false" data-mode="long">
+        🌙 长休息
+      </button>
+    </nav>
+
+    <!-- Timer Card -->
+    <main class="timer-card" role="main">
+      <!-- SVG Progress Ring -->
+      <div class="ring-container" aria-hidden="true">
+        <svg class="progress-ring" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#e94560"/>
+              <stop offset="100%" stop-color="#9b59b6"/>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+              <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          <!-- Track -->
+          <circle class="ring-track" cx="110" cy="110" r="96" />
+          <!-- Progress -->
+          <circle class="ring-progress" id="ringProgress" cx="110" cy="110" r="96"
+            stroke-dasharray="603.2"
+            stroke-dashoffset="0"
+            filter="url(#glow)"
+          />
+        </svg>
+
+        <!-- Timer Display -->
+        <div class="timer-center">
+          <div class="timer-display" id="timerDisplay" aria-live="polite" aria-atomic="true">25:00</div>
+          <div class="timer-label" id="timerLabel">专注时间</div>
+        </div>
+      </div>
+
+      <!-- Session Counter -->
+      <div class="session-info">
+        <div class="round-dots" id="roundDots" aria-label="会话进度"></div>
+        <span class="session-text" id="sessionText">第 1 轮 · 第 1 / 4 个专注</span>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls" role="group" aria-label="Timer controls">
+        <button class="ctrl-btn reset-btn" id="resetBtn" title="重置" aria-label="重置计时器">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+
+        <button class="ctrl-btn start-btn" id="startBtn" aria-label="开始计时">
+          <svg class="icon-play" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5,3 19,12 5,21"/>
+          </svg>
+          <svg class="icon-pause hidden" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16"/>
+            <rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        </button>
+
+        <button class="ctrl-btn skip-btn" id="skipBtn" title="跳过本节" aria-label="跳到下一节">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polygon points="5,4 15,12 5,20"/>
+            <line x1="19" y1="4" x2="19" y2="20"/>
+          </svg>
+        </button>
+      </div>
+    </main>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-value" id="totalFocused">0</span>
+        <span class="stat-label">今日专注分钟</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value" id="totalSessions">0</span>
+        <span class="stat-label">已完成专注节数</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle">设置</h2>
+        <button class="modal-close" id="modalClose" aria-label="关闭设置">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="setting-row">
+          <label for="settingPomodoro">🍅 专注时长（分钟）</label>
+          <input type="number" id="settingPomodoro" class="setting-input" min="1" max="90" value="25" />
+        </div>
+        <div class="setting-row">
+          <label for="settingShort">☕ 短休息（分钟）</label>
+          <input type="number" id="settingShort" class="setting-input" min="1" max="30" value="5" />
+        </div>
+        <div class="setting-row">
+          <label for="settingLong">🌙 长休息（分钟）</label>
+          <input type="number" id="settingLong" class="setting-input" min="1" max="60" value="15" />
+        </div>
+        <div class="setting-row">
+          <label for="settingRounds">🔁 每轮专注次数</label>
+          <input type="number" id="settingRounds" class="setting-input" min="1" max="8" value="4" />
+        </div>
+        <div class="setting-row">
+          <label for="settingSound">🔔 提示音</label>
+          <label class="toggle">
+            <input type="checkbox" id="settingSound" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="setting-row">
+          <label for="settingNotify">🔔 桌面通知</label>
+          <label class="toggle">
+            <input type="checkbox" id="settingNotify" />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="save-btn" id="saveSettings">保存设置</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
